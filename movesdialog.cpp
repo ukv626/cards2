@@ -80,6 +80,7 @@ MovesDialog::MovesDialog(int detailId, double qty, int nr, QWidget *parent)
   tableView->setCurrentIndex(tableView->model()->index(0, 0));
 
   QAction *newAction = new QAction(trUtf8("Добавить.."), this);
+  newAction->setShortcut(tr("Ins"));
   connect(newAction, SIGNAL(triggered()), this, SLOT(insert()));
   
   QAction *editAction = new QAction(trUtf8("Редактировать.."), this);
@@ -148,6 +149,15 @@ void MovesDialog::remove()
   if (r == QMessageBox::No)
     return;
 
+  QItemSelectionModel *selection = tableView->selectionModel();
+  int row = selection->selectedIndexes().first().row();
+
+  QAbstractItemModel *model = tableView->model();
+  model->removeRows(row, 1);
+  if(model->submit())
+    QMessageBox::warning(this, trUtf8("Внимание"),
+			 trUtf8("Не забудьте изменить остаток на корректный!!"),
+			 QMessageBox::Ok);
 
 }
 

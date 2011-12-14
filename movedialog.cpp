@@ -20,7 +20,7 @@
 
 #include "movedialog.h"
 
-MoveDialog::MoveDialog(int id, int detailId, double qty, int nr, QWidget *parent)
+MoveDialog::MoveDialog(qint32 id, qint32 detailId, double qty, qint32 nr, QWidget *parent)
   : QDialog(parent), id_(id), detailId_(detailId), qty_(qty), nr_(nr)
 {
   dateTimeEdit = new QDateTimeEdit(QDateTime::currentDateTime());
@@ -38,10 +38,12 @@ MoveDialog::MoveDialog(int id, int detailId, double qty, int nr, QWidget *parent
   documentLabel->setBuddy(documentEdit);
 
   nSpinBox = new QSpinBox;
+  nSpinBox->setRange(0, 999999999);
   nLabel = new QLabel(trUtf8("Кол-во"));
   nLabel->setBuddy(nSpinBox);
 
   ostSpinBox = new QSpinBox;
+  ostSpinBox->setRange(0, 999999999);
   ostLabel = new QLabel(trUtf8("Остаток"));
   ostLabel->setBuddy(ostSpinBox);
 
@@ -84,7 +86,6 @@ MoveDialog::MoveDialog(int id, int detailId, double qty, int nr, QWidget *parent
   tableModel->setFilter(QString("tb_moves.uid=%1").arg(id));
   tableModel->select();
   tableModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
-
   
   placeModel = tableModel->relationModel(Move_PlaceId);
   placeModel->sort(1, Qt::AscendingOrder);
@@ -121,7 +122,7 @@ MoveDialog::MoveDialog(int id, int detailId, double qty, int nr, QWidget *parent
   mainLayout->addWidget(buttonBox);
   setLayout(mainLayout);
 
-  setWindowTitle(tr("Move"));
+  setWindowTitle(trUtf8("Новое движение"));
 }
 
 
@@ -142,7 +143,7 @@ int MoveDialog::getAmount()
 {
   int amount = nSpinBox->value();
   if(typeCheckBox->isChecked())
-    amount *=- 1;
+    amount *= -1;
 
   return amount;
 }

@@ -19,7 +19,7 @@ class MoveDialog : public QDialog
     Q_OBJECT
 
 public:
-  MoveDialog(int id, int detailId = 0, double qty = 0, int nr = 0, QWidget *parent = 0);
+  MoveDialog(qint32 id, qint32 detailId = 0, double qty = 0, qint32 nr = 0, QWidget *parent = 0);
   ~MoveDialog();
   int getAmount();
     enum {
@@ -62,10 +62,10 @@ private:
     
     QDialogButtonBox *buttonBox;
 
-    int id_;
-    int detailId_;
+    qint32 id_;
+    qint32 detailId_;
     double qty_;
-    int nr_;
+    qint32 nr_;
 };
 
 #endif
