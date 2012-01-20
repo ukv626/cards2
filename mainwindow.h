@@ -21,7 +21,9 @@ protected:
 private slots:
     void limits();
     void report1();
+    void report2();
     void report1Print(QPrinter * printer);
+    void report2Print(QPrinter * printer);
     void about();
     void places();
     void updateStatusBar();
@@ -52,6 +54,7 @@ private:
     QAction *limitsAction;
     QAction *placesAction;
     QAction *report1Action;
+    QAction *report2Action;
     QAction *aboutAction;
     QAction *aboutQtAction;
 

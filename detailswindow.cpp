@@ -223,8 +223,9 @@ void DetailsWindow::newRow()
 
   QAbstractItemModel *model = tableView->model();
   QModelIndex index = model->index(row, Details_CatNum);
-  model->insertRow(row+1);
-  model->setData(model->index(row+1, Details_TypeId), typeComboBox->currentIndex());
+  model->insertRow(row + 1);
+  model->setData(model->index(row +1, Details_TypeId), typeComboBox->currentIndex());
+  model->submit();
 
   tableView->setCurrentIndex(index);
 }
@@ -245,17 +246,19 @@ void DetailsWindow::copyRow()
   record.setValue(Details_Brandname, model->data(model->index(row, Details_Brandname)));
   */
   QModelIndex index = model->index(row, Details_Text);
-  model->insertRow(row+1);
-  model->setData(model->index(row+1, Details_CatNum),
+  
+  model->insertRow(row + 1);
+  model->setData(model->index(row + 1, Details_CatNum),
 		 model->data(model->index(row, Details_CatNum)));
-  model->setData(model->index(row+1, Details_Text),
+  model->setData(model->index(row + 1, Details_Text),
 		 model->data(model->index(row, Details_Text)));
-  model->setData(model->index(row+1, Details_TypeId), typeComboBox->currentIndex());
+  model->setData(model->index(row + 1, Details_TypeId), typeComboBox->currentIndex());
    		 
   // model->setData(model->index(row+1, Details_Qty2),
   // 		 model->data(model->index(row, Details_Qty2)));
-  model->setData(model->index(row+1, Details_Brandname),
+  model->setData(model->index(row + 1, Details_Brandname),
 		 model->data(model->index(row, Details_Brandname)));
+  model->submit();
 
   tableView->setCurrentIndex(index);
 }

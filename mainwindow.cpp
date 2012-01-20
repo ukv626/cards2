@@ -62,20 +62,20 @@ void MainWindow::limits()
 
 void MainWindow::report1()
 {
-    DatesInputDialog dialog(this);
+  DatesInputDialog dialog(this);
   
   if(dialog.exec() != QDialog::Accepted)
     return;
 
   QSqlQuery query;
   query.prepare("SELECT p.text "
-			   ",CASE WHEN m.mflag THEN SUM(m.qty*m.n) ELSE 0 END "
-			   ",CASE WHEN NOT m.mflag THEN SUM(m.qty*m.n) ELSE 0 END "
-			   "FROM tb_moves m, tb_places p "
-			   "WHERE m.placeID=p.uid "
-			   "AND DATE(m.date_)>=:date1 "
-			   "AND DATE(m.date_)<=:date2 "
-			   "GROUP BY 1 ORDER BY 1");
+		",CASE WHEN m.mflag THEN SUM(m.qty*m.n) ELSE 0 END "
+		",CASE WHEN NOT m.mflag THEN SUM(m.qty*m.n) ELSE 0 END "
+		"FROM tb_moves m, tb_places p "
+		"WHERE m.placeID=p.uid "
+		"AND DATE(m.date_)>=:date1 "
+		"AND DATE(m.date_)<=:date2 "
+		"GROUP BY 1 ORDER BY 1");
 
   query.bindValue(":date1", dialog.date1Edit->date());
   query.bindValue(":date2", dialog.date2Edit->date());
@@ -147,6 +147,134 @@ void MainWindow::report1Print(QPrinter * printer)
   delete doc;
 }
 
+void MainWindow::report2()
+{
+  // LimitsRequestDialog dialog(this);
+  // if(dialog.exec() != QDialog::Accepted)
+  //   return;
+  
+  // QAbstractItemModel *model = tableView->model();
+  // QString lim = model->data(model->index(tableView->currentIndex().row(),
+  // 					 Limit_Text)).toString();
+  // QString customer = model->data(model->index(tableView->currentIndex().row(),
+  // 					 Limit_Customer)).toString();
+  // QString limDate = model->data(model->index(tableView->currentIndex().row(),
+  // 					 Limit_Date)).toString();
+  
+
+  QSqlQuery query;
+  query.prepare("SELECT 1"
+		" ,strftime('%d.%m.%Y',m.date_)"
+		" ,d.catNum"
+		" ,d.text"
+		" ,m.n"
+		" ,d.qty"
+		" ,m.n*d.qty "
+		" ,p.text "
+		" ,m.document "
+		"FROM tb_moves m"
+		" ,tb_details d "
+		" ,tb_places p " 
+		"WHERE 1=1"
+		" AND m.detailId=d.uid"
+		" AND m.placeId=p.uid"
+		" AND m.document like :document "
+		"ORDER BY m.date_");
+  query.bindValue(":document", trUtf8("л/к%"));
+  query.exec();
+
+  html="";
+  html += "<html><body>" +
+    trUtf8("<H4>Отчет по лимиткам</H4>") +
+    "<table border=1 cellpadding=5 width=100%>";
+
+  QStringList headers;
+  headers << trUtf8("№ п/п") << trUtf8("Дата") << trUtf8("Кат. номер")
+	  << trUtf8("Наименование") << trUtf8("Кол-во") << trUtf8("Цена")
+	  << trUtf8("Сумма") << trUtf8("Заказчик") << trUtf8("Документ");
+
+  html += "<tr>";
+  foreach(QString header, headers) {
+    html += "<th>";
+    html += header;
+    html += "</th>";
+  }
+  html += "</tr>";
+
+  int j=0;
+  while(query.next()) {
+    html += "<tr>";
+    for (int i = 0; i < 9; i++) {
+      if(i == 0 || i == 4 || i == 5 || i == 6)
+	html += "<td align=right>";
+      else if(i == 1)
+	html += "<td align=center>";
+      else
+	html += "<td>";
+      
+      switch(i) {
+      case 0:
+	html += tr("%1").arg(++j);
+	break;
+      case 1:
+      case 2:
+      case 3:
+      case 4:
+      case 7:
+      case 8:
+	html += query.value(i).toString();
+	break;
+      case 5:
+      case 6:
+	html += tr("%1").arg(query.value(i).toDouble(), 0, 'f', 2);
+	break;
+      }
+      
+      html += "</td>";
+    }
+    html += "</tr>";
+  }
+
+  /*
+  html += "<tr>";
+  html += "<td border=0 colspan=7>Final</td>";
+  html += "<td align=right border=0>0.00</td>";
+  html += "<td border=0 colspan=3></td>";
+  html += "</tr>";
+  */
+
+  html += "</table></body></html>";
+  
+  QPrinter printer(QPrinter::ScreenResolution);
+  printer.setPaperSize(QPrinter::A4);
+  
+  printer.setOrientation(QPrinter::Landscape);
+  //printer.setFullPage(true);
+  QPrintPreviewDialog *printdialog = new QPrintPreviewDialog(&printer, this);
+  printdialog->setWindowState(Qt::WindowMaximized);
+  
+  connect(printdialog, SIGNAL(paintRequested(QPrinter*)), 
+      this, SLOT(report2Print(QPrinter*)));
+
+  printdialog->exec();
+  delete printdialog;
+}
+
+void MainWindow::report2Print(QPrinter * printer)
+{
+  QTextDocument *doc = new QTextDocument();
+  doc->setHtml(html);
+
+  QSizeF paperSize;
+  paperSize.setWidth(printer->width());
+  paperSize.setHeight(printer->height());
+
+  doc->setPageSize(paperSize);
+  doc->print(printer);
+
+  delete doc;
+}
+
 
 
 void MainWindow::about()
@@ -202,6 +330,9 @@ void MainWindow::createActions()
     report1Action = new QAction(trUtf8("Движение за период.."), this);
     connect(report1Action, SIGNAL(triggered()), this, SLOT(report1()));
 
+    report2Action = new QAction(trUtf8("Все лимитки"), this);
+    connect(report2Action, SIGNAL(triggered()), this, SLOT(report2()));
+
     aboutAction = new QAction(tr("&About"), this);
     aboutAction->setStatusTip(tr("Show the application's About box"));
     connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
@@ -231,6 +362,7 @@ void MainWindow::createMenus()
 
     reportsMenu = menuBar()->addMenu(trUtf8("&Отчеты"));
     reportsMenu->addAction(report1Action);
+    reportsMenu->addAction(report2Action);
 
     menuBar()->addSeparator();
 

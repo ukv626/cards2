@@ -6,24 +6,26 @@
 
 bool createConnection()
 {
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("./tmp/db_cards.db");
+  QSettings settings("cards.conf", QSettings::IniFormat);
+  
+  QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+  db.setDatabaseName(settings.value("path2db", "./tmp/db_cards.db").toString());
 
-/*
+  /*
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
     db.setHostName("127.0.0.1");
     db.setPort(3326);
     db.setDatabaseName("db_cards");
     db.setUserName("gm_user");
     db.setPassword("gm_user");
-*/
+  */
     
-    if (!db.open()) {
-        QMessageBox::warning(0, QObject::tr("Database Error"),
-                             db.lastError().text());
-        return false;
-    }
-    return true;
+  if (!db.open()) {
+    QMessageBox::warning(0, QObject::tr("Database Error"),
+			 db.lastError().text());
+    return false;
+  }
+  return true;
 }
 
 

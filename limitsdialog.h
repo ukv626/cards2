@@ -4,12 +4,12 @@
 #include <QDialog>
 #include <QSqlQueryModel>
 
-//class QLabel;
-//class QLineEdit;
+class QLabel;
+class QLineEdit;
 //class QComboBox;
 class QTableView;
 class QSqlQueryModel;
-//class QSortFilterProxyModel;
+class QSortFilterProxyModel;
 
 
 class LimitsModel : public QSqlQueryModel
@@ -39,18 +39,21 @@ public:
   };
 
 private slots:
-    //void filterStringChanged();
-    void printPreview();
-    void print(QPrinter * printer);
+    void filterRegExpChanged();
+    void viewPreview();
+    void view(QPrinter * printer);
+
+    void roadPreview();
+    void road(QPrinter * printer);
     //void showPrintDialog();
 
 private:
-  //QLabel *label;
-  //QLineEdit *lineEdit;
+  QLabel *findLabel;
+  QLineEdit *findEdit;
   //QComboBox *comboBox;
   QTableView *tableView;
   LimitsModel *queryModel;
-  //QSortFilterProxyModel *proxyModel;
+  QSortFilterProxyModel *proxyModel;
 
   QString html;
 };
