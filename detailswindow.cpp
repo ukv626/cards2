@@ -216,6 +216,11 @@ void DetailsWindow::typeChanged()
   relModel->select();
 }
 
+qint8 DetailsWindow::getCurTypeId()
+{
+  return typeComboBox->currentIndex();
+}
+
 void DetailsWindow::newRow()
 {
   QItemSelectionModel *selection = tableView->selectionModel();

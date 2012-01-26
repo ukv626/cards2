@@ -52,6 +52,7 @@ class DetailsWindow : public QWidget
 public:
     DetailsWindow(QWidget *parent = 0);
     ~DetailsWindow();
+    qint8 getCurTypeId();
 
     enum {
       Details_Id = 0,

@@ -4,6 +4,7 @@
 #include "mainwindow.h"
 #include "detailswindow.h"
 #include "limitsdialog.h"
+#include "actsdialog.h"
 #include "DatesInputDialog.h"
 #include "placesdialog.h"
 
@@ -56,7 +57,14 @@ void MainWindow::find()
 
 void MainWindow::limits()
 {
-  LimitsDialog dialog(this);
+  LimitsDialog dialog(detailsWindow->getCurTypeId(), this);
+  dialog.exec();
+}
+
+
+void MainWindow::acts()
+{
+  ActsDialog dialog(detailsWindow->getCurTypeId(), this);
   dialog.exec();
 }
 
@@ -275,7 +283,14 @@ void MainWindow::report2Print(QPrinter * printer)
   delete doc;
 }
 
-
+// void MainWindow::updateTable(const QString &table, int uid, const QString &text)
+// {
+//   QSqlQuery query;
+//   query.prepare("UPDATE "+table+" SET prim=:prim||prim WHERE uid=:uid");
+//   query.bindValue(":uid",  uid);
+//   query.bindValue(":prim", text);
+//   query.exec();
+// }
 
 void MainWindow::about()
 {
@@ -286,6 +301,77 @@ void MainWindow::about()
                "demonstrates QAction, QMainWindow, QMenuBar, "
                "QStatusBar, QTableWidget, QToolBar, and many other "
                "Qt classes."));
+
+  // QSqlQuery query("SELECT * FROM tb_details WHERE nr>0");
+  // QSqlQuery query2;
+  // bool found;
+  // int eq=0, eq2=0 ,ne=0, nr;//more=0,less=0;
+
+  // while (query.next()) {
+  //   query2.prepare("SELECT uid,nr FROM tb_details0101 "
+  // 		  "WHERE catNum=:catNum "
+  // 		   // "AND text=:text "
+  // 		  "AND qty=:qty");
+
+  //   query2.bindValue(":catNum", query.value(1).toString());
+  //   // query2.bindValue(":text",   query.value(2).toString());
+  //   query2.bindValue(":qty",    query.value(3).toString());
+  //   query2.exec();
+
+  //   found = false;
+  //   nr = 0;
+  //   while (query2.next()) {
+  //     found = true;
+      
+  //     if(query.value(6).toInt() == query2.value(1).toInt()) {
+  // 	updateTable("tb_details", query.value(0).toInt(), "EE ");
+  // 	updateTable("tb_details0101", query2.value(0).toInt(), "EE ");
+	
+  // 	eq++;
+  // 	break;
+  //     }
+  //     else {
+  // 	nr += query2.value(1).toInt();
+  // 	if(query.value(6).toInt() == nr) {
+  // 	  updateTable("tb_details", query.value(0).toInt(), "E1 ");
+  // 	  eq2++;
+  // 	  nr = 0;
+  // 	  break;
+  // 	}
+  //     }
+  //   }
+  //   if(!found) {
+  //     ne++;
+  //     updateTable("tb_details", query.value(0).toInt(), "NE ");
+  //   }
+  // }
+  // qDebug() << "EQ=" << eq << " EQ2=" << eq2 << " NE=" << ne;
+
+  // QSqlQuery query("SELECT * FROM tb_details0101");
+  // QSqlQuery query2;
+  // bool found;
+  
+  // while (query.next()) {
+  //   query2.prepare("SELECT uid,nr FROM tb_details "
+  // 		  "WHERE catNum=:catNum "
+  // 		  // "AND text=:text "
+  // 		  "AND qty=:qty");
+
+  //   query2.bindValue(":catNum", query.value(1).toString());
+  //   // query2.bindValue(":text",   query.value(2).toString());
+  //   query2.bindValue(":qty",    query.value(3).toString());
+  //   query2.exec();
+
+  //   found = false;
+  //   while (query2.next()) {
+  //     found = true;
+  //     break;
+  //   }
+
+  //   if(!found)
+  //     updateTable("tb_details0101", query.value(0).toInt(), "NEW ");
+
+  // }
 }
 
 void MainWindow::places()
@@ -323,6 +409,9 @@ void MainWindow::createActions()
     //findAction->setStatusTip(tr("Find a matching cell"));
     connect(limitsAction, SIGNAL(triggered()), this, SLOT(limits()));
 
+    actsAction = new QAction(trUtf8("Акты.."), this);
+    connect(actsAction, SIGNAL(triggered()), this, SLOT(acts()));
+
     placesAction = new QAction(trUtf8("Назначения"), this);
     //aboutAction->setStatusTip(tr("Show the application's About box"));
     connect(placesAction, SIGNAL(triggered()), this, SLOT(places()));
@@ -356,6 +445,7 @@ void MainWindow::createMenus()
 
     toolsMenu = menuBar()->addMenu(trUtf8("&Инструменты"));
     toolsMenu->addAction(limitsAction);
+    toolsMenu->addAction(actsAction);
     toolsMenu->addAction(placesAction);
     //toolsMenu->addAction(recalculateAction);
     //toolsMenu->addAction(sortAction);

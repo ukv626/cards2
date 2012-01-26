@@ -1,5 +1,5 @@
-#ifndef LIMITSDIALOG_H
-#define LIMITSDIALOG_H
+#ifndef ACTSDIALOG_H
+#define ACTSDIALOG_H
 
 #include <QDialog>
 #include <QSqlQueryModel>
@@ -12,50 +12,43 @@ class QSqlQueryModel;
 class QSortFilterProxyModel;
 
 
-class LimitsModel : public QSqlQueryModel
+class ActsModel : public QSqlQueryModel
 {
   Q_OBJECT
     
 public:
-  LimitsModel(QObject *parent = 0);
+  ActsModel(QObject *parent = 0);
   QVariant data(const QModelIndex &index,
                 int role = Qt::DisplayRole) const;
 };
 
 
-class LimitsDialog : public QDialog
+class ActsDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-  LimitsDialog(qint8 typeId, QWidget *parent = 0);
-  ~LimitsDialog();
+  ActsDialog(qint8 typeId, QWidget *parent = 0);
+  ~ActsDialog();
   enum {
-    Limit_Date = 0,
-    Limit_Text = 1,
-    Limit_Customer = 2,
-    Limit_Count = 3,
-    Limit_Sum = 4
+    Act_Date = 0,
+    Act_Text = 1,
+    Act_Customer = 2,
+    Act_Count = 3,
+    Act_Sum = 4
   };
 
 private slots:
     void filterRegExpChanged();
-    void viewPreview();
-    void view(QPrinter * printer);
-
-    void roadPreview();
-    void road(QPrinter * printer);
-    //void showPrintDialog();
+    void view();
 
 private:
   QLabel *findLabel_;
   QLineEdit *findEdit_;
   //QComboBox *comboBox;
   QTableView *tableView_;
-  LimitsModel *queryModel_;
+  ActsModel *queryModel_;
   QSortFilterProxyModel *proxyModel_;
-
-  QString html_;
 };
 
 #endif

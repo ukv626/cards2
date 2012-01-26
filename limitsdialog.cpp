@@ -53,16 +53,16 @@ QVariant LimitsModel::data(const QModelIndex &index, int role) const
 }
 
 
-LimitsDialog::LimitsDialog(QWidget *parent)
+LimitsDialog::LimitsDialog(qint8 typeId, QWidget *parent)
   : QDialog(parent)
 {
-  findLabel = new QLabel(trUtf8("&Поиск"));
-  findEdit = new QLineEdit;
-  findLabel->setBuddy(findEdit);
+  findLabel_ = new QLabel(trUtf8("&Поиск"));
+  findEdit_ = new QLineEdit;
+  findLabel_->setBuddy(findEdit_);
 
   QHBoxLayout *topLayout = new QHBoxLayout;
-  topLayout->addWidget(findLabel);
-  topLayout->addWidget(findEdit);
+  topLayout->addWidget(findLabel_);
+  topLayout->addWidget(findEdit_);
 
   QSqlQuery query;
   query.exec();
@@ -77,41 +77,43 @@ LimitsDialog::LimitsDialog(QWidget *parent)
 		" ,tb_details d "
 		"WHERE 1=1 "
 		" AND m.detailId=d.uid"
+		" AND d.typeId=:typeId"
 		" AND m.placeId=p.uid"
 		" AND m.document LIKE :document "
 		"GROUP BY 1,2,3 ORDER BY m.date_ DESC");
+  query.bindValue(":typeId", typeId);
   query.bindValue(":document", trUtf8("л/к%"));
   query.exec();
 
-  tableView = new QTableView;
-  queryModel = new LimitsModel;
+  tableView_ = new QTableView;
+  queryModel_ = new LimitsModel;
   
-  queryModel->setQuery(query);
+  queryModel_->setQuery(query);
 
-  queryModel->setHeaderData(Limit_Date, Qt::Horizontal, trUtf8("Дата"));
-  queryModel->setHeaderData(Limit_Text, Qt::Horizontal, trUtf8("Документ"));
-  queryModel->setHeaderData(Limit_Customer, Qt::Horizontal, trUtf8("Заказчик"));
-  queryModel->setHeaderData(Limit_Count, Qt::Horizontal, trUtf8("Кол-во"));
-  queryModel->setHeaderData(Limit_Sum, Qt::Horizontal, trUtf8("Сумма"));
+  queryModel_->setHeaderData(Limit_Date, Qt::Horizontal, trUtf8("Дата"));
+  queryModel_->setHeaderData(Limit_Text, Qt::Horizontal, trUtf8("Документ"));
+  queryModel_->setHeaderData(Limit_Customer, Qt::Horizontal, trUtf8("Заказчик"));
+  queryModel_->setHeaderData(Limit_Count, Qt::Horizontal, trUtf8("Кол-во"));
+  queryModel_->setHeaderData(Limit_Sum, Qt::Horizontal, trUtf8("Сумма"));
 
-  proxyModel = new QSortFilterProxyModel;
+  proxyModel_ = new QSortFilterProxyModel;
   //proxyModel->setDynamicSortFilter(true);
-  proxyModel->setSourceModel(queryModel);
-  proxyModel->setFilterKeyColumn(-1);
+  proxyModel_->setSourceModel(queryModel_);
+  proxyModel_->setFilterKeyColumn(-1);
   //proxyModel->sort(Details_Text, Qt::AscendingOrder);
 
-  connect(findEdit, SIGNAL(textChanged(QString)),
+  connect(findEdit_, SIGNAL(textChanged(QString)),
   	  this, SLOT(filterRegExpChanged()), Qt::UniqueConnection);
 
 
-  tableView->setModel(proxyModel);
+  tableView_->setModel(proxyModel_);
 
-  tableView->setSelectionMode(QAbstractItemView::ExtendedSelection);
-  tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+  tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
+  tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
   
-  tableView->verticalHeader()->hide();
-  tableView->resizeColumnsToContents();
-  tableView->setAlternatingRowColors(true);
+  tableView_->verticalHeader()->hide();
+  tableView_->resizeColumnsToContents();
+  tableView_->setAlternatingRowColors(true);
 
 
   //QAction *viewAction = new QAction(trUtf8("&Просмотр"), this);
@@ -125,9 +127,9 @@ LimitsDialog::LimitsDialog(QWidget *parent)
   connect(roadAction, SIGNAL(triggered()), this, SLOT(roadPreview()));
 
 
-  tableView->addAction(viewAction);
-  tableView->addAction(roadAction);
-  tableView->setContextMenuPolicy(Qt::ActionsContextMenu);
+  tableView_->addAction(viewAction);
+  tableView_->addAction(roadAction);
+  tableView_->setContextMenuPolicy(Qt::ActionsContextMenu);
 
   /*
   tableView->horizontalHeader()->setStretchLastSection(false);
@@ -136,30 +138,30 @@ LimitsDialog::LimitsDialog(QWidget *parent)
   tableView->horizontalHeader()->setResizeMode(Storages_Amount,QHeaderView::Custom);
   */
 
-  tableView->resizeColumnsToContents();
-  tableView->setCurrentIndex(tableView->model()->index(0, 0));
+  tableView_->resizeColumnsToContents();
+  tableView_->setCurrentIndex(tableView_->model()->index(0, 0));
 
   QVBoxLayout *mainLayout = new QVBoxLayout;
   mainLayout->addLayout(topLayout);
-  mainLayout->addWidget(tableView);
+  mainLayout->addWidget(tableView_);
   setLayout(mainLayout);
 
   setWindowTitle(trUtf8("Лимитки"));
-  setFixedWidth(tableView->horizontalHeader()->length()+50);
+  setFixedWidth(tableView_->horizontalHeader()->length()+50);
   setFixedHeight(380);
 }
 
 LimitsDialog::~LimitsDialog()
 {
-  delete proxyModel;
-  delete queryModel;
+  delete proxyModel_;
+  delete queryModel_;
 }
 
 void LimitsDialog::filterRegExpChanged()
 {
-  QRegExp regExp(findEdit->text());
-  proxyModel->setFilterRegExp(regExp);
-  proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+  QRegExp regExp(findEdit_->text());
+  proxyModel_->setFilterRegExp(regExp);
+  proxyModel_->setFilterCaseSensitivity(Qt::CaseInsensitive);
 }
 
 
@@ -192,12 +194,12 @@ void LimitsDialog::viewPreview()
   if(dialog.exec() != QDialog::Accepted)
     return;
   
-  QAbstractItemModel *model = tableView->model();
-  QString lim = model->data(model->index(tableView->currentIndex().row(),
+  QAbstractItemModel *model = tableView_->model();
+  QString lim = model->data(model->index(tableView_->currentIndex().row(),
 					 Limit_Text)).toString();
-  QString customer = model->data(model->index(tableView->currentIndex().row(),
+  QString customer = model->data(model->index(tableView_->currentIndex().row(),
 					 Limit_Customer)).toString();
-  QString limDate = model->data(model->index(tableView->currentIndex().row(),
+  QString limDate = model->data(model->index(tableView_->currentIndex().row(),
 					 Limit_Date)).toString();
   
 
@@ -221,8 +223,8 @@ void LimitsDialog::viewPreview()
   query.bindValue(":date", limDate);
   query.exec();
 
-  html="";
-  html += "<html><body><FONT size=\"+1\">"+
+  html_="";
+  html_ += "<html><body><FONT size=\"+1\">"+
     trUtf8("<H1>Лимитная карта № %1</H1>"
 	   "на отпуск запчастей со склада № 8"
 	   "<PRE>на капитальный ремонт ДСТ <u><i><b><FONT size=\"+2\">%2</FONT></b></i></u>           Заказчик <u><i><b><FONT size=\"+2\">%3</FONT></b></i></u>     Дислокация <u><i><b><FONT size=\"+2\">%4</FONT></b></i></u></PRE>").arg(dialog.limNumber->text()).arg(dialog.technics->currentText(), -10).arg(customer).arg(dialog.place->text())+
@@ -234,74 +236,74 @@ void LimitsDialog::viewPreview()
 	  << trUtf8("Цена") << trUtf8("Сумма") << trUtf8("№ техники")
 	  << trUtf8("Подпись") << trUtf8("Расшиф-ровка");
 
-  html += "<tr>";
+  html_ += "<tr>";
   // foreach(QString header, headers) {
   //   html += "<th>";
   //   html += header;
   //   html += "</th>";
   // }
-  html += "<th width=4%>" + headers[0]+ "</th>";
-  html += "<th width=13%>" + headers[1]+ "</th>";
-  html += "<th width=17%>" + headers[2]+ "</th>";
-  html += "<th width=5%>" + headers[3]+ "</th>";
-  html += "<th width=5%>" + headers[4]+ "</th>";
-  html += "<th width=10%>" + headers[5]+ "</th>";
-  html += "<th width=10%>" + headers[6]+ "</th>";
-  html += "<th width=10%>" + headers[7]+ "</th>";
-  html += "<th width=8%>" + headers[8]+ "</th>";
-  html += "<th width=9%>" + headers[9]+ "</th>";
-  html += "<th width=9%>" + headers[10]+ "</th>";
-  html += "</tr>";
+  html_ += "<th width=4%>" + headers[0]+ "</th>";
+  html_ += "<th width=13%>" + headers[1]+ "</th>";
+  html_ += "<th width=17%>" + headers[2]+ "</th>";
+  html_ += "<th width=5%>" + headers[3]+ "</th>";
+  html_ += "<th width=5%>" + headers[4]+ "</th>";
+  html_ += "<th width=10%>" + headers[5]+ "</th>";
+  html_ += "<th width=10%>" + headers[6]+ "</th>";
+  html_ += "<th width=10%>" + headers[7]+ "</th>";
+  html_ += "<th width=8%>" + headers[8]+ "</th>";
+  html_ += "<th width=9%>" + headers[9]+ "</th>";
+  html_ += "<th width=9%>" + headers[10]+ "</th>";
+  html_ += "</tr>";
 
   int j=0;
   while(query.next()) {
-    html += "<tr>";
+    html_ += "<tr>";
     for (int i = 0; i < headers.size(); i++) {
       
       switch(i) {
       case 0:
-  	html += "<td align=right>" + tr("%1").arg(++j);
+  	html_ += "<td align=right>" + tr("%1").arg(++j);
   	break;
       case 1:
-  	html += "<td align=center>" + query.value(i).toString();
+  	html_ += "<td align=center>" + query.value(i).toString();
   	break;
       case 2:
-  	html += "<td align=center>" + query.value(i).toString();
+  	html_ += "<td align=center>" + query.value(i).toString();
   	break;
       case 3:
-  	html += "<td align=center>" + trUtf8("шт.");
+  	html_ += "<td align=center>" + trUtf8("шт.");
   	break;
       case 4:
-  	html += "<td align=right>" + query.value(i).toString();
+  	html_ += "<td align=right>" + query.value(i).toString();
   	break;
       case 5:
-  	html += "<td align=center>" + query.value(i).toString();
+  	html_ += "<td align=center>" + query.value(i).toString();
   	break;
       case 6:
       case 7:
-  	html += "<td align=right>" + tr("%1").arg(query.value(i).toDouble(),0,'f',2);
+  	html_ += "<td align=right>" + tr("%1").arg(query.value(i).toDouble(),0,'f',2);
   	break;
       case 8:
-  	html += "<td align=right>" + dialog.technicsNumber->text();
+  	html_ += "<td align=right>" + dialog.technicsNumber->text();
   	break;
       default:
-  	html += "<td>";
+  	html_ += "<td>";
       }
       
-      html += "</td>";
+      html_ += "</td>";
     }
-    html += "</tr>";
+    html_ += "</tr>";
   }
 
   /*
-  html += "<tr>";
-  html += "<td border=0 colspan=7>Final</td>";
-  html += "<td align=right border=0>0.00</td>";
-  html += "<td border=0 colspan=3></td>";
-  html += "</tr>";
+  html_ += "<tr>";
+  html_ += "<td border=0 colspan=7>Final</td>";
+  html_ += "<td align=right border=0>0.00</td>";
+  html_ += "<td border=0 colspan=3></td>";
+  html_ += "</tr>";
   */
 
-  html += "</table></FONT></body></html>";
+  html_ += "</table></FONT></body></html_>";
   
   QPrinter printer(QPrinter::ScreenResolution);
   printer.setPaperSize(QPrinter::A4);
@@ -321,7 +323,7 @@ void LimitsDialog::viewPreview()
 void LimitsDialog::view(QPrinter * printer)
 {
   QTextDocument *doc = new QTextDocument();
-  doc->setHtml(html);
+  doc->setHtml(html_);
 
   QSizeF paperSize;
   paperSize.setWidth(printer->width());
@@ -340,12 +342,12 @@ void LimitsDialog::roadPreview()
   if(dialog.exec() != QDialog::Accepted)
     return;
   
-  QAbstractItemModel *model = tableView->model();
-  QString lim = model->data(model->index(tableView->currentIndex().row(),
+  QAbstractItemModel *model = tableView_->model();
+  QString lim = model->data(model->index(tableView_->currentIndex().row(),
 					 Limit_Text)).toString();
-  QString customer = model->data(model->index(tableView->currentIndex().row(),
+  QString customer = model->data(model->index(tableView_->currentIndex().row(),
 					 Limit_Customer)).toString();
-  QString limDate = model->data(model->index(tableView->currentIndex().row(),
+  QString limDate = model->data(model->index(tableView_->currentIndex().row(),
 					 Limit_Date)).toString();
   
 
@@ -368,15 +370,15 @@ void LimitsDialog::roadPreview()
   query.bindValue(":date", limDate);
   query.exec();
 
-  // html="";
-  // html += "<html><body>"+
+  // html_="";
+  // html_ += "<html_><body>"+
   //   trUtf8("<PRE><H4>Лимитная карта  <FONT size=\"+2\">%1</FONT><BR>"
   // 	   "на отпуск запчастей со склада № 8<BR><BR>"
   // 	   "на капитальный ремонт ДСТ <u><i><b><FONT size=\"+2\">%2</FONT></b></i></u>           Заказчик <u><i><b><FONT size=\"+2\">%3</FONT></b></i></u>     Дислокация <u><i><b><FONT size=\"+2\">%4</FONT></b></i></u></H4></PRE>").arg(dialog.limNumber->text()).arg(dialog.technics->currentText(), -10).arg(customer).arg(dialog.place->text())+
   //   
 
-  html="";
-  html += "<html><body> <FONT size=\"+1\">"+
+  html_="";
+  html_ += "<html_><body> <FONT size=\"+1\">"+
     trUtf8("<table border=0 width=100% cellspacing=10> "
 	   "<tr> <td  width=50%>Разрешил: </td><td align=right>Дата: %1</td> </tr>"
 	   "<tr> <td align=center colspan=2><H1>Накладная № %2</H1</td> </tr>"
@@ -390,75 +392,75 @@ void LimitsDialog::roadPreview()
 	  << trUtf8("Ед. изм.") << trUtf8("Кол-во") << trUtf8("Цена")
 	  << trUtf8("Сумма") << trUtf8("Примеча-ние");
 
-  html += "<tr>";
+  html_ += "<tr>";
   // foreach(QString header, headers) {
-  //   html += "<th>";
-  //   html += header;
-  //   html += "</th>";
+  //   html_ += "<th>";
+  //   html_ += header;
+  //   html_ += "</th>";
   // }
   
-  html += "<th width=6%>" + headers[0]+ "</th>";
-  html += "<th width=14%>" + headers[1]+ "</th>";
-  html += "<th width=21%>" + headers[2]+ "</th>";
-  html += "<th width=8%>" + headers[3]+ "</th>";
-  html += "<th width=8%>" + headers[4]+ "</th>";
-  html += "<th width=14%>" + headers[5]+ "</th>";
-  html += "<th width=14%>" + headers[6]+ "</th>";
-  html += "<th width=15%>" + headers[7]+ "</th>";
-  html += "</tr>";
+  html_ += "<th width=6%>" + headers[0]+ "</th>";
+  html_ += "<th width=14%>" + headers[1]+ "</th>";
+  html_ += "<th width=21%>" + headers[2]+ "</th>";
+  html_ += "<th width=8%>" + headers[3]+ "</th>";
+  html_ += "<th width=8%>" + headers[4]+ "</th>";
+  html_ += "<th width=14%>" + headers[5]+ "</th>";
+  html_ += "<th width=14%>" + headers[6]+ "</th>";
+  html_ += "<th width=15%>" + headers[7]+ "</th>";
+  html_ += "</tr>";
 
   int j = 0;
   while(query.next()) {
-    html += "<tr>";
+    html_ += "<tr>";
     for (int i = 0; i < headers.size(); i++) {
       switch(i) {
       case 0:
-	html += "<td align=right>" + tr("%1").arg(++j);
+	html_ += "<td align=right>" + tr("%1").arg(++j);
 	break;
       case 1:
-	html += "<td align=center>" + query.value(i).toString();
+	html_ += "<td align=center>" + query.value(i).toString();
 	break;
       case 2:
-	html += "<td>" + query.value(i).toString();
+	html_ += "<td>" + query.value(i).toString();
 	break;
       case 3:
-	html += "<td align=center>" + trUtf8("шт.");
+	html_ += "<td align=center>" + trUtf8("шт.");
 	break;
       case 4:
-	html += "<td align=right>" + query.value(i).toString();
+	html_ += "<td align=right>" + query.value(i).toString();
 	break;
       case 5:
-	html += "<td align=right>" +
+	html_ += "<td align=right>" +
 	  tr("%1").arg(query.value(i).toDouble(), 0, 'f', 2);
 	break;
       case 6:
-	html += "<td align=right>" +
+	html_ += "<td align=right>" +
 	  tr("%1").arg(query.value(i).toDouble(), 0, 'f', 2);
 	break;
       default:
-	html += "<td>";
+	html_ += "<td>";
       }
       
-      html += "</td>";
+      html_ += "</td>";
     }
-    html += "</tr>";
+    html_ += "</tr>";
   }
 
   /*
-  html += "<tr>";
-  html += "<td border=0 colspan=7>Final</td>";
-  html += "<td align=right border=0>0.00</td>";
-  html += "<td border=0 colspan=3></td>";
-  html += "</tr>";
+  html_ += "<tr>";
+  html_ += "<td border=0 colspan=7>Final</td>";
+  html_ += "<td align=right border=0>0.00</td>";
+  html_ += "<td border=0 colspan=3></td>";
+  html_ += "</tr>";
   */
 
-  html += "</table>";
-  html += trUtf8("<br> <table border=0 width=100% cellspacing=10> "
+  html_ += "</table>";
+  html_ += trUtf8("<br> <table border=0 width=100% cellspacing=10> "
 		 " <tr>"
 		 "  <td width=50%>Груз отпустил:</td>"
 		 "  <td>Груз получил:</td>"
 		 " </tr>"
-		 "</table></FONT></body></html>");
+		 "</table></FONT></body></html_>");
   
   QPrinter printer(QPrinter::ScreenResolution);
   printer.setPaperSize(QPrinter::A4);
@@ -478,7 +480,7 @@ void LimitsDialog::roadPreview()
 void LimitsDialog::road(QPrinter * printer)
 {
   QTextDocument *doc = new QTextDocument();
-  doc->setHtml(html);
+  doc->setHtml(html_);
 
   QSizeF paperSize;
   paperSize.setWidth(printer->width());
