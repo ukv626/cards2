@@ -210,10 +210,13 @@ void DetailsWindow::filterRegExpChanged()
   proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
 }
 
+
 void DetailsWindow::typeChanged()
 {
   relModel->setFilter(QString("tb_details.typeId=%1").arg(typeComboBox->currentIndex()));
   relModel->select();
+
+  emit typeChangedSig(typeComboBox->currentIndex());
 }
 
 qint8 DetailsWindow::getCurTypeId()

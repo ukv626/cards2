@@ -67,6 +67,9 @@ public:
       Details_Comment = 9,
       Details_TypeId = 10
     };
+
+signals:
+    void typeChangedSig(int typeId);
     
 private slots:
     void filterRegExpChanged();

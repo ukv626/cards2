@@ -19,6 +19,7 @@ protected:
     void closeEvent(QCloseEvent *event);
 
 private slots:
+    void detailsTypeChanged(int TypeId);
     void limits();
     void acts();    
     void report1();

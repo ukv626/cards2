@@ -21,6 +21,11 @@ MainWindow::MainWindow()
 
     query = new QSqlQuery;
 
+    connect(detailsWindow, SIGNAL(typeChangedSig(int)),
+            this, SLOT(detailsTypeChanged(int)));
+
+    detailsTypeChanged(0);
+
     //readSettings();
 
     //findDialog = 0;
@@ -32,6 +37,20 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
   writeSettings();
   event->accept();
+}
+
+void MainWindow::detailsTypeChanged(int typeId)
+{
+  QSqlQuery query;
+  query.prepare("SELECT SUM(qty*nr) FROM tb_details WHERE typeId=:typeId");
+  query.bindValue(":typeId_", typeId);
+  query.exec();
+
+  double sum = 0;
+  if(query.next())
+    sum = query.value(0).toDouble();
+
+  formulaLabel->setText(QString("%1").arg(sum, 0, 'f', 2));
 }
 
 /*
@@ -383,8 +402,8 @@ void MainWindow::places()
 
 void MainWindow::updateStatusBar()
 {
-  locationLabel->setText(tr(""));
-  formulaLabel->setText(tr(""));
+  //locationLabel->setText(tr(""));
+  //formulaLabel->setText(tr(""));
 }
 
 /*
@@ -487,22 +506,22 @@ void MainWindow::createToolBars()
 
 void MainWindow::createStatusBar()
 {
-    locationLabel = new QLabel(" W999 ");
-    locationLabel->setAlignment(Qt::AlignHCenter);
-    locationLabel->setMinimumSize(locationLabel->sizeHint());
+  locationLabel = new QLabel(trUtf8("<b>Итого: <b>"));
+  locationLabel->setAlignment(Qt::AlignHCenter);
+  locationLabel->setMinimumSize(locationLabel->sizeHint());
 
-    formulaLabel = new QLabel;
-    formulaLabel->setIndent(3);
+  formulaLabel = new QLabel;
+  formulaLabel->setIndent(3);
 
-    statusBar()->addWidget(locationLabel);
-    statusBar()->addWidget(formulaLabel, 1);
+  statusBar()->addWidget(locationLabel);
+  statusBar()->addWidget(formulaLabel, 1);
 
     // connect(spreadsheet, SIGNAL(currentCellChanged(int, int, int, int)),
     //         this, SLOT(updateStatusBar()));
     // connect(spreadsheet, SIGNAL(modified()),
     //         this, SLOT(spreadsheetModified()));
 
-    updateStatusBar();
+  updateStatusBar();
 }
 
 void MainWindow::readSettings()
