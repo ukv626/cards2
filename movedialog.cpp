@@ -20,7 +20,7 @@
 
 #include "movedialog.h"
 
-MoveDialog::MoveDialog(qint32 id, qint32 detailId, double qty, qint32 nr, QWidget *parent)
+MoveDialog::MoveDialog(qint32 id, qint32 detailId, double qty, double nr, QWidget *parent)
   : QDialog(parent), id_(id), detailId_(detailId), qty_(qty), nr_(nr)
 {
   dateTimeEdit = new QDateTimeEdit(QDateTime::currentDateTime());
@@ -37,19 +37,19 @@ MoveDialog::MoveDialog(qint32 id, qint32 detailId, double qty, qint32 nr, QWidge
   documentLabel = new QLabel(trUtf8("Документ"));
   documentLabel->setBuddy(documentEdit);
 
-  nSpinBox = new QSpinBox;
+  nSpinBox = new QDoubleSpinBox;
   nSpinBox->setRange(0, 999999999);
   nLabel = new QLabel(trUtf8("Кол-во"));
   nLabel->setBuddy(nSpinBox);
 
-  ostSpinBox = new QSpinBox;
+  ostSpinBox = new QDoubleSpinBox;
   ostSpinBox->setRange(0, 999999999);
   ostLabel = new QLabel(trUtf8("Остаток"));
   ostLabel->setBuddy(ostSpinBox);
 
-  limSpinBox = new QSpinBox;
-  limLabel = new QLabel(trUtf8("Лимитка"));
-  limLabel->setBuddy(limSpinBox);
+  // limSpinBox = new QSpinBox;
+  // limLabel = new QLabel(trUtf8("Лимитка"));
+  // limLabel->setBuddy(limSpinBox);
 
   typeCheckBox = new QCheckBox(trUtf8("Расход"));
   typeLabel = new QLabel(trUtf8("Тип"));
@@ -139,9 +139,9 @@ void MoveDialog::typeChanged()
 }
 
 
-int MoveDialog::getAmount()
+double MoveDialog::getAmount()
 {
-  int amount = nSpinBox->value();
+  double amount = nSpinBox->value();
   if(typeCheckBox->isChecked())
     amount *= -1;
 

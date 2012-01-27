@@ -285,7 +285,7 @@ void DetailsWindow::showMovesDialog()
 
   int detailId = model->data(model->index(tableView->currentIndex().row(), Details_Id)).toInt();
   double qty = model->data(model->index(tableView->currentIndex().row(), Details_Qty)).toDouble();
-  int nr = model->data(model->index(tableView->currentIndex().row(), Details_NR)).toInt();
+  double nr = model->data(model->index(tableView->currentIndex().row(), Details_NR)).toDouble();
 
   MovesDialog dialog(detailId, qty, nr, this);
   dialog.exec();

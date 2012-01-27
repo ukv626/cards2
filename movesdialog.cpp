@@ -36,7 +36,7 @@ QVariant MySqlRelationalTableModel::data(const QModelIndex &index, int role) con
   return value;
 }
 
-MovesDialog::MovesDialog(int detailId, double qty, int nr, QWidget *parent)
+MovesDialog::MovesDialog(int detailId, double qty, double nr, QWidget *parent)
   : QDialog(parent), detailId_(detailId), qty_(qty), nr_(nr), needUpdate_(false)
 {
   tableView = new QTableView;
