@@ -168,34 +168,37 @@ void ActsDialog::view()
   
 
   QSqlQuery query;
-  query.prepare("SELECT 1"
-		" ,d.catNum"
-		" ,d.text"
-		" ,''"
-		" ,m.n"
-		" ,strftime('%d.%m.%Y',date_)"
-		" ,d.qty"
-		" ,m.n*d.qty "
+  query.prepare("SELECT 1 "
+		",d.catNum "
+		",d.text "
+		",'' "
+		",m.n "
+		",strftime('%d.%m.%Y',date_) "
+		",d.qty "
+		",m.n*d.qty "
 		"FROM tb_moves m"
 		" ,tb_details d "
-		"WHERE 1=1"
-		" AND m.detailId=d.uid"
-		" AND m.document=:document"
-		" AND strftime('%d.%m.%Y',date_)=:date "
+		"WHERE 1=1 "
+		"AND m.detailId=d.uid "
+		"AND m.document=:document "
+		"AND strftime('%d.%m.%Y',date_)=:date "
 		"ORDER BY d.text");
   query.bindValue(":document", lim);
   query.bindValue(":date", limDate);
   query.exec();
 
   QFile file("./acts.txt");
-  if(file.open(QIODevice::ReadWrite)) {
+  if(file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
     
     QTextStream fout(&file);
     
     while(query.next()) {
-      for(qint8 i=0; i<8; ++i)
-	fout << query.value(i).toString() << ";";
-      
+      for(qint8 i=0; i < 8; ++i) {
+	if(i == 6 || i == 7)
+	  fout << query.value(i).toString().replace('.',',') << ";";
+	else
+	  fout << query.value(i).toString() << ";";
+      }
       fout << "\n";
     }
     file.close();

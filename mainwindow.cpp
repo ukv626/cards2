@@ -1,6 +1,7 @@
 #include <QtGui>
 #include <QSqlQuery>
 
+
 #include "mainwindow.h"
 #include "detailswindow.h"
 #include "limitsdialog.h"
@@ -87,6 +88,99 @@ void MainWindow::acts()
   dialog.exec();
 }
 
+void MainWindow::report1fully_(const QDate &date1, const QDate &date2,
+			       bool mflag, QFile *file)
+{
+  QSqlQuery query;
+  query.prepare("SELECT strftime('%d.%m.%Y',date_) "
+		",p.text "
+		",d.catNum "
+		",d.text "
+		",m.document "
+		",m.n "
+		",d.qty "
+		",m.n*d.qty "
+		"FROM tb_moves m "
+		",tb_details d "
+		",tb_places p "
+		"WHERE 1=1 "
+		"AND m.detailID=d.uid "
+		"AND m.placeId=p.uid "
+		"AND DATE(date_)>=:date1 "
+		"AND DATE(date_)<=:date2 "
+		"AND m.mflag=:mflag "
+		"ORDER BY 2,1");
+  query.bindValue(":date1", date1);
+  query.bindValue(":date2", date2);
+  query.bindValue(":mflag", mflag);
+  query.exec();
+
+  QTextStream fout(file);
+  if(mflag)
+    fout << trUtf8("РАСХОД\n");
+  else
+    fout << trUtf8("ПРИХОД\n");
+  
+  while(query.next()) {
+    for(qint8 i=0; i < 8; ++i) {
+      if(i == 6 || i == 7)
+	fout << query.value(i).toString().replace('.',',') << ";";
+      else
+	fout << query.value(i).toString() << ";";
+    }
+    fout << "\n";
+  }
+  fout << "\n\n";
+
+  query.prepare("SELECT p.text"
+		",SUM(m.n*d.qty) "
+		"FROM tb_moves m "
+		",tb_details d "
+		",tb_places p "
+		"WHERE 1=1 "
+		"AND m.detailID=d.uid "
+		"AND m.placeId=p.uid "
+		"AND DATE(m.date_)>=:date1 "
+		"AND DATE(m.date_)<=:date2 "
+		"AND m.mflag=:mflag "
+		"GROUP BY 1 "
+		"ORDER BY 1");
+  query.bindValue(":date1", date1);
+  query.bindValue(":date2", date2);
+  query.bindValue(":mflag", mflag);
+  query.exec();
+
+
+  while(query.next()) {
+    for(qint8 i = 0; i < 2; ++i) {
+      if(i == 1)
+	fout << query.value(i).toString().replace('.',',') << ";";
+      else
+	fout << query.value(i).toString() << ";";
+    }
+    fout << "\n";
+  }
+  
+  if(mflag)
+    fout << "\n\n\n\n\n\n";
+}
+
+void MainWindow::report1fully()
+{
+  DatesInputDialog dialog(this);
+  
+  if(dialog.exec() != QDialog::Accepted)
+    return;
+
+  QFile file("./report1fully.txt");
+  if(file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+    report1fully_(dialog.date1Edit->date(), dialog.date2Edit->date(), true, &file);
+    report1fully_(dialog.date1Edit->date(), dialog.date2Edit->date(), false, &file);
+    file.close();
+  }
+}
+
+
 void MainWindow::report1()
 {
   DatesInputDialog dialog(this);
@@ -96,10 +190,11 @@ void MainWindow::report1()
 
   QSqlQuery query;
   query.prepare("SELECT p.text "
-		",CASE WHEN m.mflag THEN SUM(m.qty*m.n) ELSE 0 END "
-		",CASE WHEN NOT m.mflag THEN SUM(m.qty*m.n) ELSE 0 END "
-		"FROM tb_moves m, tb_places p "
+		",SUM(CASE WHEN m.mflag='true' THEN m.qty*m.n ELSE 0 END) "
+		",SUM(CASE WHEN m.mflag='false' THEN m.qty*m.n ELSE 0 END) "
+		"FROM tb_moves m, tb_places p, tb_details d "
 		"WHERE m.placeID=p.uid "
+		"AND m.detailID=d.uid "
 		"AND DATE(m.date_)>=:date1 "
 		"AND DATE(m.date_)<=:date2 "
 		"GROUP BY 1 ORDER BY 1");
@@ -438,6 +533,9 @@ void MainWindow::createActions()
     report1Action = new QAction(trUtf8("Движение за период.."), this);
     connect(report1Action, SIGNAL(triggered()), this, SLOT(report1()));
 
+    report1fullyAction = new QAction(trUtf8("Движение за период (xls).."), this);
+    connect(report1fullyAction, SIGNAL(triggered()), this, SLOT(report1fully()));
+
     report2Action = new QAction(trUtf8("Все лимитки"), this);
     connect(report2Action, SIGNAL(triggered()), this, SLOT(report2()));
 
@@ -471,6 +569,7 @@ void MainWindow::createMenus()
 
     reportsMenu = menuBar()->addMenu(trUtf8("&Отчеты"));
     reportsMenu->addAction(report1Action);
+    reportsMenu->addAction(report1fullyAction);
     reportsMenu->addAction(report2Action);
 
     menuBar()->addSeparator();

@@ -7,6 +7,8 @@ class QAction;
 class QLabel;
 class DetailsWindow;
 class QSqlQuery;
+class QDate;
+class QFile;
 
 class MainWindow : public QMainWindow
 {
@@ -21,8 +23,9 @@ protected:
 private slots:
     void detailsTypeChanged(int TypeId);
     void limits();
-    void acts();    
+    void acts();
     void report1();
+    void report1fully();
     void report2();
     void report1Print(QPrinter * printer);
     void report2Print(QPrinter * printer);
@@ -38,6 +41,8 @@ private:
     void createStatusBar();
     void readSettings();
     void writeSettings();
+    void report1fully_(const QDate &date1, const QDate &date2,
+		       bool mflag, QFile *file);
     /* void updateTable(const QString &table, int uid, const QString &text); */
 
     DetailsWindow *detailsWindow;
@@ -58,6 +63,7 @@ private:
     QAction *actsAction;
     QAction *placesAction;
     QAction *report1Action;
+    QAction *report1fullyAction;
     QAction *report2Action;
     QAction *aboutAction;
     QAction *aboutQtAction;
