@@ -255,9 +255,12 @@ void LimitsDialog::viewPreview()
   html_ += "<th width=9%>" + headers[10]+ "</th>";
   html_ += "</tr>";
 
-  int j=0;
+  int j = 0;
+  double total = 0;
   while(query.next()) {
+    total += query.value(7).toDouble();
     html_ += "<tr>";
+    
     for (int i = 0; i < headers.size(); i++) {
       
       switch(i) {
@@ -294,6 +297,18 @@ void LimitsDialog::viewPreview()
     }
     html_ += "</tr>";
   }
+
+  html_ += trUtf8("<tr>"
+		 " <td></td>"
+		 " <td><b>ИТОГО<b></td>"
+		 " <td></td>"
+		 " <td></td>"
+		 " <td></td>"
+		 " <td></td>"
+		 " <td></td>"
+		 " <td align=right><b>%1</b></td>"
+		 "</tr>").arg(total, 0, 'f', 2);
+
 
   /*
   html_ += "<tr>";

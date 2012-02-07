@@ -100,8 +100,8 @@ DetailsWindow::DetailsWindow(QWidget *parent)
   typeLabel = new QLabel(trUtf8("&Тип склада"));
   typeComboBox = new QComboBox;
   typeComboBox->addItems(QStringList() << trUtf8("Запчасти") << trUtf8("ДЗВ")
-			 << trUtf8("Хранение") << trUtf8("Спец. одежда")
-			 << trUtf8("Разное"));
+			 << trUtf8("ТМЦ") << trUtf8("Спец. одежда")
+			 << trUtf8("Разное") << trUtf8("РТС"));
   typeLabel->setBuddy(findEdit);
 
   connect(typeComboBox, SIGNAL(currentIndexChanged(QString)),

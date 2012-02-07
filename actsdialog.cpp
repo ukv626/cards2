@@ -187,7 +187,7 @@ void ActsDialog::view()
   query.bindValue(":date", limDate);
   query.exec();
 
-  QFile file("./acts.txt");
+  QFile file("./txt/acts.txt");
   if(file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
     
     QTextStream fout(&file);
@@ -202,8 +202,11 @@ void ActsDialog::view()
       fout << "\n";
     }
     file.close();
+    QMessageBox::information(0, trUtf8("Информация"), trUtf8("Выполнено.."));
   }
-
+  
+  // QProcess proc;
+  // proc.startDetached("./txt/acts.txt");
 }
 
 

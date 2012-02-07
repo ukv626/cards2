@@ -172,11 +172,12 @@ void MainWindow::report1fully()
   if(dialog.exec() != QDialog::Accepted)
     return;
 
-  QFile file("./report1fully.txt");
+  QFile file("./txt/report1fully.txt");
   if(file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
     report1fully_(dialog.date1Edit->date(), dialog.date2Edit->date(), true, &file);
     report1fully_(dialog.date1Edit->date(), dialog.date2Edit->date(), false, &file);
     file.close();
+    QMessageBox::information(0, trUtf8("Информация"), trUtf8("Выполнено.."));
   }
 }
 
@@ -323,8 +324,10 @@ void MainWindow::report2()
   }
   html += "</tr>";
 
-  int j=0;
+  int j = 0;
+  double total = 0;
   while(query.next()) {
+    total += query.value(6).toDouble();
     html += "<tr>";
     for (int i = 0; i < 9; i++) {
       if(i == 0 || i == 4 || i == 5 || i == 6)
@@ -356,6 +359,17 @@ void MainWindow::report2()
     }
     html += "</tr>";
   }
+  html += trUtf8("<tr>"
+	     " <td></td>"
+	     " <td><b>ИТОГО<b></td>"
+	     " <td></td>"
+	     " <td></td>"
+	     " <td></td>"
+	     " <td></td>"
+	     " <td align=right><b>%1</b></td>"
+	     " <td></td>"
+	     " <td></td>"
+	     "</tr>").arg(total, 0, 'f', 2);
 
   /*
   html += "<tr>";
