@@ -116,6 +116,8 @@ void MainWindow::report1fully_(const QDate &date1, const QDate &date2,
   query.exec();
 
   QTextStream fout(file);
+  fout.setCodec("Windows-1251");
+  
   if(mflag)
     fout << trUtf8("РАСХОД\n");
   else

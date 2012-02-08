@@ -50,7 +50,7 @@ QVariant ActsModel::data(const QModelIndex &index, int role) const
 }
 
 
-ActsDialog::ActsDialog(qint8 typeId, QWidget *parent)
+ActsDialog::ActsDialog(qint8 /* typeId */, QWidget *parent)
   : QDialog(parent)
 {
   findLabel_ = new QLabel(trUtf8("&Поиск"));
@@ -74,11 +74,11 @@ ActsDialog::ActsDialog(qint8 typeId, QWidget *parent)
 		" ,tb_details d "
 		"WHERE 1=1 "
 		" AND m.detailId=d.uid"
-		" AND d.typeId=:typeId"
+		// " AND d.typeId=:typeId"
 		" AND m.placeId=p.uid"
-		" AND m.document LIKE :document "
+		" AND m.document NOT LIKE :document "
 		"GROUP BY 1,2,3 ORDER BY m.date_ DESC");
-  query.bindValue(":typeId", typeId);
+  // query.bindValue(":typeId", typeId);
   query.bindValue(":document", trUtf8("л/к%"));
   query.exec();
 
@@ -191,6 +191,7 @@ void ActsDialog::view()
   if(file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
     
     QTextStream fout(&file);
+    fout.setCodec("Windows-1251");
     
     while(query.next()) {
       for(qint8 i=0; i < 8; ++i) {

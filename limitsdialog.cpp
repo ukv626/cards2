@@ -53,7 +53,7 @@ QVariant LimitsModel::data(const QModelIndex &index, int role) const
 }
 
 
-LimitsDialog::LimitsDialog(qint8 typeId, QWidget *parent)
+LimitsDialog::LimitsDialog(qint8 /* typeId */, QWidget *parent)
   : QDialog(parent)
 {
   findLabel_ = new QLabel(trUtf8("&Поиск"));
@@ -77,11 +77,11 @@ LimitsDialog::LimitsDialog(qint8 typeId, QWidget *parent)
 		" ,tb_details d "
 		"WHERE 1=1 "
 		" AND m.detailId=d.uid"
-		" AND d.typeId=:typeId"
+		// " AND d.typeId=:typeId"
 		" AND m.placeId=p.uid"
 		" AND m.document LIKE :document "
 		"GROUP BY 1,2,3 ORDER BY m.date_ DESC");
-  query.bindValue(":typeId", typeId);
+  // query.bindValue(":typeId", typeId);
   query.bindValue(":document", trUtf8("л/к%"));
   query.exec();
 
