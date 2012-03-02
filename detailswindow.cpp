@@ -134,7 +134,7 @@ DetailsWindow::DetailsWindow(QWidget *parent)
   relModel->setHeaderData(Details_Comment, Qt::Horizontal, trUtf8("Комментарий"));
 
   proxyModel = new QSortFilterProxyModel;
-  //proxyModel->setDynamicSortFilter(true);
+  // proxyModel->setDynamicSortFilter(false);
   proxyModel->setSourceModel(relModel);
   proxyModel->setFilterKeyColumn(-1);
   //proxyModel->sort(Details_Text, Qt::AscendingOrder);
@@ -242,10 +242,10 @@ void DetailsWindow::newRow()
 void DetailsWindow::copyRow()
 {
   QItemSelectionModel *selection = tableView->selectionModel();
-  int row = selection->selectedIndexes().first().row();
+  int curRow = selection->selectedIndexes().first().row();
 
   //QSqlRecord record = relModel->record();
-  QAbstractItemModel *model = tableView->model();
+  // QAbstractItemModel *model = tableView->model();
   /*
   record.setValue(Details_CatNum, model->data(model->index(row, Details_CatNum)));
   record.setValue(Details_Text, model->data(model->index(row, Details_Text)));
@@ -253,22 +253,24 @@ void DetailsWindow::copyRow()
   record.setValue(Details_Qty2, model->data(model->index(row, Details_Qty2)));
   record.setValue(Details_Brandname, model->data(model->index(row, Details_Brandname)));
   */
-  QModelIndex index = model->index(row, Details_Text);
+  QAbstractItemModel *model = tableView->model();
+  QModelIndex index = relModel->index(curRow, Details_Text);
+  int newRow = relModel->rowCount();
+  relModel->insertRow(newRow);
   
-  model->insertRow(row + 1);
-  model->setData(model->index(row + 1, Details_CatNum),
-		 model->data(model->index(row, Details_CatNum)));
-  model->setData(model->index(row + 1, Details_Text),
-		 model->data(model->index(row, Details_Text)));
-  model->setData(model->index(row + 1, Details_TypeId), typeComboBox->currentIndex());
+  relModel->setData(relModel->index(newRow, Details_CatNum),
+		 model->data(model->index(curRow, Details_CatNum)));
+  relModel->setData(relModel->index(newRow, Details_Text),
+		 model->data(model->index(curRow, Details_Text)));
+  relModel->setData(relModel->index(newRow, Details_TypeId), typeComboBox->currentIndex());
    		 
   // model->setData(model->index(row+1, Details_Qty2),
   // 		 model->data(model->index(row, Details_Qty2)));
-  model->setData(model->index(row + 1, Details_Brandname),
-		 model->data(model->index(row, Details_Brandname)));
-  model->submit();
+  relModel->setData(relModel->index(newRow, Details_Brandname),
+		 model->data(model->index(curRow, Details_Brandname)));
+  relModel->submitAll();
 
-  tableView->setCurrentIndex(index);
+  tableView->selectRow(curRow);
 }
 
 /*
