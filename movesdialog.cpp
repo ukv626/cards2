@@ -133,7 +133,7 @@ void MovesDialog::edit()
 
     int id = model->data(model->index(tableView->currentIndex().row(), 0)).toInt();
     
-    MoveDialog dialog(id);
+    MoveDialog dialog(id, 0, 0, 0, this);
     if(dialog.exec() == QDialog::Accepted)
       tableModel->select();
   }

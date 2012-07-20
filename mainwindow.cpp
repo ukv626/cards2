@@ -8,6 +8,7 @@
 #include "actsdialog.h"
 #include "DatesInputDialog.h"
 #include "placesdialog.h"
+#include "place-dialog.h"
 
 MainWindow::MainWindow()
 {
@@ -153,7 +154,11 @@ void MainWindow::report1fully_(const QDate &date1, const QDate &date2,
   query.exec();
 
 
+  double sum = 0;
+
   while(query.next()) {
+    sum += query.value(1).toDouble();
+    
     for(qint8 i = 0; i < 2; ++i) {
       if(i == 1)
 	fout << query.value(i).toString().replace('.',',') << ";";
@@ -162,6 +167,8 @@ void MainWindow::report1fully_(const QDate &date1, const QDate &date2,
     }
     fout << "\n";
   }
+
+  fout << trUtf8("ИТОГО: %1\n").arg(sum, 0, 'f', 2);
   
   if(mflag)
     fout << "\n\n\n\n\n\n";
@@ -225,7 +232,12 @@ void MainWindow::report1()
   }
   html += "</tr>";
 
+  double sumRa = 0;
+  double sumPr = 0;
   while(query.next()) {
+    sumRa += query.value(1).toDouble();
+    sumPr += query.value(2).toDouble();         
+
     html += "<tr>";
     for (int i = 0; i < 3; i++) {
       if(i == 1 || i == 2) {
@@ -242,6 +254,13 @@ void MainWindow::report1()
     html += "</tr>";
   }
 
+  // total
+  html += trUtf8("<tr>"
+             "<td><b>ИТОГО</b></td>"
+             "<td align=right>%1</td>"
+             "<td align=right>%2</td>"
+             "</tr>").arg(sumRa, 0, 'f', 2).arg(sumPr, 0, 'f', 2);
+    
   html += "</table></body></html>";
 
   QPrinter printer(QPrinter::ScreenResolution);
@@ -274,6 +293,10 @@ void MainWindow::report1Print(QPrinter * printer)
 
 void MainWindow::report2()
 {
+  PlaceDialog dialog(this);
+  if(dialog.exec() != QDialog::Accepted)
+    return;
+  
   // LimitsRequestDialog dialog(this);
   // if(dialog.exec() != QDialog::Accepted)
   //   return;
@@ -288,23 +311,28 @@ void MainWindow::report2()
   
 
   QSqlQuery query;
-  query.prepare("SELECT 1"
-		" ,strftime('%d.%m.%Y',m.date_)"
-		" ,d.catNum"
-		" ,d.text"
-		" ,m.n"
-		" ,d.qty"
-		" ,m.n*d.qty "
-		" ,p.text "
-		" ,m.document "
-		"FROM tb_moves m"
-		" ,tb_details d "
-		" ,tb_places p " 
-		"WHERE 1=1"
-		" AND m.detailId=d.uid"
-		" AND m.placeId=p.uid"
-		" AND m.document like :document "
-		"ORDER BY m.date_");
+  QString queryStr = "SELECT 1"
+                     " ,strftime('%d.%m.%Y',m.date_)"
+                     " ,d.catNum"
+                     " ,d.text"
+                     " ,m.n"
+                     " ,d.qty"
+                     " ,m.n*d.qty "
+                     " ,p.text "
+                     " ,m.document "
+                     "FROM tb_moves m"
+                     " ,tb_details d "
+                     " ,tb_places p " 
+                     "WHERE 1=1"
+                     " AND m.detailId=d.uid"
+                     " AND m.placeId=p.uid"
+                     " AND m.document like :document ";
+  if(dialog.getText() != "") {
+    queryStr += tr(" AND p.text='%1' ").arg(dialog.getText());
+  }
+  
+  queryStr += "ORDER BY m.date_";
+  query.prepare(queryStr);
   query.bindValue(":document", trUtf8("л/к%"));
   query.exec();
 
